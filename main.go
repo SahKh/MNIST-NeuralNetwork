@@ -7,6 +7,36 @@ import (
     "go-mnist-nn/utils"
     "os"
 )
+
+func blurImage(input [][]float64) [][]float64 {
+	blurred := make([][]float64, 28)
+	for i := 0; i < 28; i++ {
+			blurred[i] = make([]float64, 28)
+			for j := 0; j < 28; j++ {
+					sum := input[i][j]
+					count := 1
+					if i > 0 {
+							sum += input[i-1][j]
+							count++
+					}
+					if i < 27 {
+							sum += input[i+1][j]
+							count++
+					}
+					if j > 0 {
+							sum += input[i][j-1]
+							count++
+					}
+					if j < 27 {
+							sum += input[i][j+1]
+							count++
+					}
+					blurred[i][j] = sum / float64(count)
+			}
+	}
+	return blurred
+}
+
 func testModel(nn *neuralnetwork.NeuralNetwork) {
     // Load test images and labels
     testImages, err := utils.ReadImages("dataset/t10k-images.idx3-ubyte")
@@ -100,15 +130,16 @@ func main() {
         }
         fmt.Println("Model saved successfully.")
     }
-		testModel(nn)
+		//testModel(nn)
     // Create the GUI for drawing digits
     gui.CreateCanvasWindow(func(input [][]float64) {
+			//fmt.Println("Raw Canvas Input:", input)
 			normalizedInput := utils.NormalizeData(input)
       flatInput := make([]float64, 0)
         for _, row := range normalizedInput {
             flatInput = append(flatInput, row...)
         }
-       
+				fmt.Println("Raw flat Input:", flatInput)
         gui.DisplayPrediction(nn, flatInput)
     })
 }
